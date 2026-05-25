@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
-using Microsoft.AspNetCore.Identity;
 using System.Text;
 
 namespace BestAuth.Api
@@ -96,7 +95,7 @@ namespace BestAuth.Api
                 SeedData.EnsureSeedDataAsync(services).GetAwaiter().GetResult();
             }
 
-            if (app.Environment.IsDevelopment())
+            //if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
                 app.MapScalarApiReference();
