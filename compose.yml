@@ -18,7 +18,7 @@ services:
     networks:
       - backend-net
 
-  order-api:
+  asp-api:
     hostname: order-api
     build:
       context: .

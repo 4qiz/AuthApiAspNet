@@ -28,6 +28,9 @@ namespace BestAuth.Api
             builder.Services.AddControllers();
             builder.Services.AddOpenApi();
 
+            var connection = builder.Configuration.GetConnectionString("DefaultConnection") ?? ""; // TODO throw error
+            builder.Services.AddDbContext<AppDbContext>(opt => opt.UseNpgsql(connection));
+
             builder.Services.AddIdentity<User, Role>(o =>
             {
                 o.Password.RequireDigit = false;
@@ -39,9 +42,6 @@ namespace BestAuth.Api
                 o.User.RequireUniqueEmail = false;
                 o.SignIn.RequireConfirmedEmail = false;
             }).AddEntityFrameworkStores<AppDbContext>();
-
-            var connection = builder.Configuration.GetConnectionString("DefaultConnection") ?? ""; // TODO throw error
-            builder.Services.AddDbContext<AppDbContext>(opt => opt.UseNpgsql(connection));
 
             builder.Services.AddAuthentication(o =>
             {
