@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace BestAuth.Infrastructure.Options
+﻿namespace BestAuth.Infrastructure.Options
 {
     public class JwtOptions
     {

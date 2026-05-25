@@ -2,6 +2,7 @@
 using BestAuth.Domain.Entities;
 using BestAuth.Infrastructure.Options;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -10,9 +11,9 @@ using System.Text;
 
 namespace BestAuth.Infrastructure.Processors
 {
-    public class AuthTokenProcessor(JwtOptions options, IHttpContextAccessor httpAccessor) : IAuthTokenProcessor
+    public class AuthTokenProcessor(IOptions<JwtOptions> options, IHttpContextAccessor httpAccessor) : IAuthTokenProcessor
     {
-        private readonly JwtOptions _jwtOptions = options;
+        private readonly JwtOptions _jwtOptions = options.Value;
         private readonly IHttpContextAccessor _httpAccessor = httpAccessor;
 
         public (string token, DateTime expiresUtc) GenerateAccessToken(User user)

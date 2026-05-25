@@ -1,4 +1,5 @@
 ﻿using BestAuth.Application.Abstracts;
+using BestAuth.Application.Constants;
 using BestAuth.Domain.Entities;
 using BestAuth.Domain.Exceptions;
 using BestAuth.Domain.Requests;
@@ -71,8 +72,8 @@ namespace BestAuth.Application.Services
 
             await _userManager.UpdateAsync(user);
 
-            _tokenProcessor.WriteHttpOnlyCookie("ACCESS_TOKEN", access.token, access.expiresUtc);
-            _tokenProcessor.WriteHttpOnlyCookie("REFRESH_TOKEN", refresh.token, refresh.expiresUtc);
+            _tokenProcessor.WriteHttpOnlyCookie(CookieNames.Access, access.token, access.expiresUtc);
+            _tokenProcessor.WriteHttpOnlyCookie(CookieNames.Refresh, refresh.token, refresh.expiresUtc);
         }
     }
 }

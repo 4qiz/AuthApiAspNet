@@ -1,5 +1,8 @@
 
+using BestAuth.Api.Handlers;
 using BestAuth.Application.Abstracts;
+using BestAuth.Application.Constants;
+using BestAuth.Application.Services;
 using BestAuth.Domain.Entities;
 using BestAuth.Infrastructure;
 using BestAuth.Infrastructure.Options;
@@ -8,6 +11,7 @@ using BestAuth.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Scalar.AspNetCore;
 using System.Text;
 
 namespace BestAuth.Api
@@ -62,24 +66,29 @@ namespace BestAuth.Api
                 {
                     OnMessageReceived = context =>
                     {
-                        context.Token = context.Request.Cookies["ACCESS_TOKEN"];
+                        context.Token = context.Request.Cookies[CookieNames.Access];
                         return Task.CompletedTask;
                     }
                 };
             });
 
             builder.Services.AddAuthorization();
+            builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+            builder.Services.AddHttpContextAccessor();
 
             builder.Services.AddScoped<IAuthTokenProcessor, AuthTokenProcessor>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IAccountService, AccountService>();
 
             var app = builder.Build();
 
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
+                app.MapScalarApiReference();
             }
 
+            app.UseExceptionHandler(_ => { });
             app.UseAuthentication();
             app.UseAuthorization();
 
