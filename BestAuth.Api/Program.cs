@@ -37,7 +37,7 @@ namespace BestAuth.Api
                 o.Password.RequireUppercase = false;
                 o.Password.RequiredLength = 1;
 
-                o.User.RequireUniqueEmail = true; // false for only username auth
+                o.User.RequireUniqueEmail = false;
                 o.SignIn.RequireConfirmedEmail = false;
             }).AddEntityFrameworkStores<AppDbContext>();
 
@@ -80,6 +80,7 @@ namespace BestAuth.Api
             builder.Services.AddScoped<IAuthTokenProcessor, AuthTokenProcessor>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IAccountService, AccountService>();
+            builder.Services.AddScoped<IRoleService, RoleService>();
 
             var app = builder.Build();
 
@@ -91,6 +92,8 @@ namespace BestAuth.Api
                 {
                     context.Database.Migrate();
                 }
+
+                SeedData.EnsureSeedDataAsync(services).GetAwaiter().GetResult();
             }
 
             if (app.Environment.IsDevelopment())

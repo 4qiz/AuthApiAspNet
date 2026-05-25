@@ -16,14 +16,14 @@ namespace BestAuth.Application.Services
 
         public async Task RegisterAsync(RegisterRequest request)
         {
-            var userExists = await _userManager.FindByEmailAsync(request.Email) != null;
+            var userExists = await _userManager.FindByNameAsync(request.UserName) != null;
 
             if (userExists)
             {
-                throw new UserExistsException(request.Email);
+                throw new UserExistsException(request.UserName);
             }
 
-            var user = User.Create(request.Email, request.UserName, request.UserName);
+            var user = User.Create(request.Email ?? "", request.UserName, request.UserName);
             user.PasswordHash = _userManager.PasswordHasher.HashPassword(user, request.Password);
 
             var result = await _userManager.CreateAsync(user);
@@ -42,10 +42,10 @@ namespace BestAuth.Application.Services
 
         public async Task LoginAsync(LoginRequest request)
         {
-            var user = await _userManager.FindByEmailAsync(request.Email);
+            var user = await _userManager.FindByNameAsync(request.UserName);
             if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
             {
-                throw new LoginFailedException(request.Email);
+                throw new LoginFailedException(request.UserName);
             }
 
             await CreateAuthSessionAsync(user);

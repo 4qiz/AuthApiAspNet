@@ -25,10 +25,9 @@ namespace BestAuth.Infrastructure.Processors
 
             var claimsList = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
-                new Claim(ClaimTypes.NameIdentifier, user.Name ?? string.Empty),
+                new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new(ClaimTypes.Name, user.UserName ?? string.Empty),
             };
 
             if (roles != null)
