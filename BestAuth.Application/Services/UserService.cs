@@ -8,7 +8,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BestAuth.Application.Services
 {
-    public class RoleService(UserManager<User> userManager, RoleManager<Role> roleManager) : IRoleService
+    /// <summary>
+    /// User management service
+    /// </summary>
+    public class UserService(UserManager<User> userManager, RoleManager<Role> roleManager) : IUserService
     {
         private readonly UserManager<User> _userManager = userManager;
         private readonly RoleManager<Role> _roleManager = roleManager;

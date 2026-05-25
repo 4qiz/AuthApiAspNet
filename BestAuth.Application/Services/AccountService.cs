@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Identity;
 
 namespace BestAuth.Application.Services
 {
+    /// <summary>
+    /// Authorization service
+    /// </summary>
     public class AccountService(IAuthTokenProcessor tokenProcessor, UserManager<User> userManager, IUserRepository userRepository)
         : IAccountService
     {
@@ -16,14 +19,14 @@ namespace BestAuth.Application.Services
 
         public async Task RegisterAsync(RegisterRequest request)
         {
-            var userExists = await _userManager.FindByNameAsync(request.UserName) != null;
+            var userExists = await _userManager.FindByNameAsync(request.Login) != null;
 
             if (userExists)
             {
-                throw new UserExistsException(request.UserName);
+                throw new UserExistsException(request.Login);
             }
 
-            var user = User.Create(request.Email ?? "", request.UserName, request.UserName);
+            var user = User.Create(request.Email ?? "", request.Login, request.Login);
             user.PasswordHash = _userManager.PasswordHasher.HashPassword(user, request.Password);
 
             var result = await _userManager.CreateAsync(user);
@@ -42,10 +45,10 @@ namespace BestAuth.Application.Services
 
         public async Task LoginAsync(LoginRequest request)
         {
-            var user = await _userManager.FindByNameAsync(request.UserName);
+            var user = await _userManager.FindByNameAsync(request.Login);
             if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
             {
-                throw new LoginFailedException(request.UserName);
+                throw new LoginFailedException(request.Login);
             }
 
             await CreateAuthSessionAsync(user);

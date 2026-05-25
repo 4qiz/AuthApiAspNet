@@ -8,28 +8,28 @@ namespace BestAuth.Api.Controllers
     [Route("api/admin")]
     [ApiController]
     [Authorize(Roles = "Admin")]
-    public class AdminController(IRoleService userManagementService) : Controller
+    public class AdminController(IUserService userService) : Controller
     {
-        private readonly IRoleService _userManagementService = userManagementService;
+        private readonly IUserService _userService = userService;
 
         [HttpGet("users")]
         public async Task<IActionResult> GetUsers(CancellationToken ct)
         {
-            var users = await _userManagementService.GetUsersWithRolesAsync(ct);
+            var users = await _userService.GetUsersWithRolesAsync(ct);
             return Ok(users);
         }
 
         [HttpPost("users/{userId:guid}/roles")]
         public async Task<IActionResult> AssignRole(Guid userId, UpdateUserRoleRequest request)
         {
-            await _userManagementService.AssignRoleAsync(userId, request.RoleName);
+            await _userService.AssignRoleAsync(userId, request.RoleName);
             return NoContent();
         }
 
         [HttpDelete("users/{userId:guid}/roles/{roleName}")]
         public async Task<IActionResult> RemoveRole(Guid userId, string roleName)
         {
-            await _userManagementService.RemoveRoleAsync(userId, roleName);
+            await _userService.RemoveRoleAsync(userId, roleName);
             return NoContent();
         }
     }

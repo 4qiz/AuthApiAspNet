@@ -3,7 +3,7 @@ using BestAuth.Domain.Requests;
 
 namespace BestAuth.Application.Abstracts
 {
-    public interface IRoleService
+    public interface IUserService
     {
         Task<IReadOnlyCollection<UserRolesResponse>> GetUsersWithRolesAsync(CancellationToken ct);
 
