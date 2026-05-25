@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BestAuth.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260525184721_seed")]
+    [Migration("20260525185143_seed")]
     partial class seed
     {
         /// <inheritdoc />
