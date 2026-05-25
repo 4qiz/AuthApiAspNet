@@ -1,8 +1,14 @@
 
+using BestAuth.Application.Abstracts;
 using BestAuth.Domain.Entities;
 using BestAuth.Infrastructure;
+using BestAuth.Infrastructure.Options;
+using BestAuth.Infrastructure.Processors;
+using BestAuth.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace BestAuth.Api
 {
@@ -12,13 +18,12 @@ namespace BestAuth.Api
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            var jwtSection = builder.Configuration.GetSection(JwtOptions.JwtOptionsKey);
+            builder.Services.Configure<JwtOptions>(jwtSection);
 
             builder.Services.AddControllers();
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
 
-            // Identity
             builder.Services.AddIdentity<User, Role>(o =>
             {
                 o.Password.RequireDigit = false;
@@ -31,21 +36,52 @@ namespace BestAuth.Api
                 o.SignIn.RequireConfirmedEmail = false;
             }).AddEntityFrameworkStores<AppDbContext>();
 
-            // DbContext
-            var connection = builder.Configuration.GetConnectionString("DefaultConnection") ?? ""; // throw error
+            var connection = builder.Configuration.GetConnectionString("DefaultConnection") ?? ""; // TODO throw error
             builder.Services.AddDbContext<AppDbContext>(opt => opt.UseNpgsql(connection));
 
+            builder.Services.AddAuthentication(o =>
+            {
+                o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                o.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(o =>
+            {
+                var jwtOptions = jwtSection.Get<JwtOptions>() ?? throw new ArgumentException(nameof(JwtOptions));
+                o.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateAudience = true,
+                    ValidateIssuer = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtOptions.Issuer,
+                    ValidAudience = jwtOptions.Audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key))
+                };
+
+                o.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        context.Token = context.Request.Cookies["ACCESS_TOKEN"];
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+
+            builder.Services.AddAuthorization();
+
+            builder.Services.AddScoped<IAuthTokenProcessor, AuthTokenProcessor>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
             }
 
+            app.UseAuthentication();
             app.UseAuthorization();
-
 
             app.MapControllers();
 
