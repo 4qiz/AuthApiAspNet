@@ -31,6 +31,13 @@ namespace BestAuth.Application.Services
             {
                 throw new RegistrationFailedException(result.Errors.Select(e => e.Description));
             }
+
+            // Назначаем роль по умолчанию
+            var roleResult = await _userManager.AddToRoleAsync(user, "User");
+            if (!roleResult.Succeeded)
+            {
+                throw new RegistrationFailedException(roleResult.Errors.Select(e => e.Description));
+            }
         }
 
         public async Task LoginAsync(LoginRequest request)
@@ -64,7 +71,8 @@ namespace BestAuth.Application.Services
 
         private async Task CreateAuthSessionAsync(User user)
         {
-            var access = _tokenProcessor.GenerateAccessToken(user);
+            var roles = await _userManager.GetRolesAsync(user);
+            var access = _tokenProcessor.GenerateAccessToken(user, roles);
             var refresh = _tokenProcessor.GenerateRefreshToken();
 
             user.RefreshToken = refresh.token;

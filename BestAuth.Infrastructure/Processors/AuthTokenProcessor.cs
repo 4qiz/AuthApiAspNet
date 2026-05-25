@@ -1,4 +1,6 @@
-﻿using BestAuth.Application.Abstracts;
+﻿using System;
+using System.Collections.Generic;
+using BestAuth.Application.Abstracts;
 using BestAuth.Domain.Entities;
 using BestAuth.Infrastructure.Options;
 using Microsoft.AspNetCore.Http;
@@ -16,24 +18,32 @@ namespace BestAuth.Infrastructure.Processors
         private readonly JwtOptions _jwtOptions = options.Value;
         private readonly IHttpContextAccessor _httpAccessor = httpAccessor;
 
-        public (string token, DateTime expiresUtc) GenerateAccessToken(User user)
+        public (string token, DateTime expiresUtc) GenerateAccessToken(User user, IEnumerable<string> roles)
         {
             var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));
             var creds = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
 
-            var claims = new[]
+            var claimsList = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email), // TODO
-                new Claim(ClaimTypes.NameIdentifier, user.Name),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
+                new Claim(ClaimTypes.NameIdentifier, user.Name ?? string.Empty),
             };
+
+            if (roles != null)
+            {
+                foreach (var role in roles)
+                {
+                    claimsList.Add(new Claim(ClaimTypes.Role, role));
+                }
+            }
 
             var expires = DateTime.UtcNow.AddMinutes(_jwtOptions.AccessExpireMinutes);
 
             var jwt = new JwtSecurityToken(issuer: _jwtOptions.Issuer,
                 audience: _jwtOptions.Audience,
-                claims: claims, expires: expires,
+                claims: claimsList, expires: expires,
                 signingCredentials: creds);
 
             var token = new JwtSecurityTokenHandler().WriteToken(jwt);

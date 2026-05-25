@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
+using Microsoft.AspNetCore.Identity;
 using System.Text;
 
 namespace BestAuth.Api
@@ -81,6 +82,16 @@ namespace BestAuth.Api
             builder.Services.AddScoped<IAccountService, AccountService>();
 
             var app = builder.Build();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                var context = services.GetRequiredService<AppDbContext>();
+                if (context.Database.GetPendingMigrations().Any())
+                {
+                    context.Database.Migrate();
+                }
+            }
 
             if (app.Environment.IsDevelopment())
             {

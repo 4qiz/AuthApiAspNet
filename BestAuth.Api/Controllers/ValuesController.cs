@@ -14,5 +14,12 @@ namespace BestAuth.Api.Controllers
         {
             return Ok("Authorize");
         }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("admin")]
+        public IActionResult GetForAdmin()
+        {
+            return Ok("Admin");
+        }
     }
 }
